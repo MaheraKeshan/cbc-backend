@@ -79,7 +79,7 @@ export function loginUser(req, res) {
 		}
 	})
 }
-//commit test
+
 
 export function isAdmin(req, res) {
 	if(req.user == null){
