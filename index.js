@@ -4,9 +4,6 @@ import mongoose from 'mongoose';
 import productRouter from './routes/productRouter.js';
 import userRouter from './routes/userRouter.js';
 import jwt from 'jsonwebtoken';
-import cors from 'cors'; // Import cors 
-
-// Create an express app
 
 const app = express(); // Create an express app
 
@@ -42,6 +39,7 @@ mongoose.connect("mongodb+srv://admin:123@cluster0.w4uhh.mongodb.net/?retryWrite
 
 app.use("/products", productRouter)
 app.use("/users", userRouter);
+app.use("/orders", orderRouter)
 
 
 
