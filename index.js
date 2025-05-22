@@ -4,9 +4,13 @@ import mongoose from 'mongoose';
 import productRouter from './routes/productRouter.js';
 import userRouter from './routes/userRouter.js';
 import jwt from 'jsonwebtoken';
+import cors from 'cors'; // Import cors 
+
+// Create an express app
 
 const app = express(); // Create an express app
 
+app.use(cors()) // Use cors middleware to enable CORS
 // Add body-parser to express app
 app.use(bodyParser.json())
 
