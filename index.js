@@ -3,8 +3,11 @@ import express from 'express'; // Import express
 import mongoose from 'mongoose';
 import productRouter from './routes/productRouter.js';
 import userRouter from './routes/userRouter.js';
+import orderRouter from './routes/orderRouter.js';
 import jwt from 'jsonwebtoken';
 import cors from 'cors'; // Import cors
+import dotenv from 'dotenv'; // Import dotenv
+dotenv.config(); // Load environment variables from .env file
 
 const app = express(); // Create an express app
 
@@ -33,7 +36,7 @@ app.use((req, res, next) => {
         next()
     }
 })
-mongoose.connect("mongodb+srv://admin:123@cluster0.w4uhh.mongodb.net/?retryWrites=true&w=majority&appName=Cluster0").then(()=>{console.log("Connected to MongoDB")   
+mongoose.connect(process.env.MONGODB_URL).then(()=>{console.log("Connected to MongoDB")   
 }).catch((err)=>{console.log("Error: ",err)})
 
 //Plug in
