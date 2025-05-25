@@ -50,29 +50,30 @@ export async function getReviewsByProduct(req, res) {
 
 // DELETE /reviews/:reviewId (admin only)
 // DELETE /reviews/:reviewId
+
 export async function deleteReview(req, res) {
 	if (!req.user) {
 		return res.status(403).json({ message: "You must be logged in to delete a review" });
 	}
 
-	const { reviewId } = req.params;
+	const { productId } = req.params;
+	const userEmail = req.user.email;
+	const isAdmin = req.user.role === "admin";
 
 	try {
-		const review = await Review.findById(reviewId);
+		let deletedReview;
 
-		if (!review) {
-			return res.status(404).json({ message: "Review not found" });
+		if (isAdmin) {
+			// Admin: delete any review for this product
+			deletedReview = await Review.findOneAndDelete({ productId });
+		} else {
+			// User: only delete their own review for this product
+			deletedReview = await Review.findOneAndDelete({ productId, userEmail });
 		}
 
-		// Admins can delete any review; users can delete their own
-		const isAdmin = req.user.role === "admin";
-		const isOwner = req.user.email === review.userEmail;
-
-		if (!isAdmin && !isOwner) {
-			return res.status(403).json({ message: "You are not authorized to delete this review" });
+		if (!deletedReview) {
+			return res.status(404).json({ message: "Review not found or not authorized to delete" });
 		}
-
-		await Review.deleteOne({ _id: reviewId });
 
 		res.status(200).json({ message: "Review deleted successfully" });
 	} catch (err) {
