@@ -7,7 +7,9 @@ import orderRouter from './routes/orderRouter.js';
 import jwt from 'jsonwebtoken';
 import cors from 'cors'; // Import cors
 import dotenv from 'dotenv'; // Import dotenv
-dotenv.config(); // Load environment variables from .env file
+dotenv.config();
+ // Load environment variables from .env file
+import reviewRouter from './routes/reviewRouter.js';
 
 const app = express(); // Create an express app
 
@@ -42,8 +44,9 @@ mongoose.connect(process.env.MONGODB_URL).then(()=>{console.log("Connected to Mo
 //Plug in
 
 app.use("/products", productRouter)
-app.use("/users", userRouter);
+app.use("/users", userRouter)
 app.use("/orders", orderRouter)
+app.use('/reviews', reviewRouter)
 
 
 
