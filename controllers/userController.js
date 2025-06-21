@@ -185,26 +185,30 @@ export async function sendOTP(req, res) {
 	});
 	await otp.save();
 
-
-	// Send OTP email
-	transport.sendMail({
+	const message = {
 		from: "maherakeshan90@gmail.com",
 		to: email,
 		subject: "Resetting password for crystal beauty clear",
-		text: `Your OTP code is: ${randomOTP}`
-	}, (error, info) => {
+		text: "Your OTP code is: "+ randomOTP
+	}
+
+
+	// Send OTP email
+	transport.sendMail(
+
+		message, (error, info) => {
 		if (error) {
-			console.error("Error sending email:", error);
 			res.status(500).json({
 				message: "Failed to send OTP"
 			});
 		} else {
-			console.log("Email sent successfully:", info.response);
+			res.json({
+				message: "OTP sent successfully",
+				otp: randomOTP // For testing purposes, you can remove this in production
+			});	
 		}
 	});
-
-	
-}	
+}
 
 export async function resetPassword(req, res) {
 	const email = req.body.email;
@@ -235,7 +239,18 @@ export async function resetPassword(req, res) {
 	}
 
 }
-
+export function getUser(req,res){
+    if(req.user == null){
+        res.status(403).json({
+            message: "You are not authorized to view user details"
+        })
+        return
+    }else{
+        res.json({
+            ...req.user
+        })
+    }
+}
 export function isAdmin(req, res) {
 	
 	if(req.user == null){
