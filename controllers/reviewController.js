@@ -14,7 +14,7 @@ export async function addReview(req, res) {
 	}
 
 	try {
-		const product = await Product.findOne({ productId });
+		const product = await Product.findById(productId);
 		if (!product) {
 			return res.status(404).json({ message: "Product not found" });
 		}
@@ -47,38 +47,74 @@ export async function getReviewsByProduct(req, res) {
 		res.status(500).json({ message: "Failed to fetch reviews" });
 	}
 }
+export async function getUserReviewsForProduct(req, res) {
+  const { productId } = req.params;
+  const userId = req.user.id; // Assuming we have user id from the authentication middleware
 
+  try {
+    const reviews = await Review.find({ productId, userId }).sort({ date: -1 });
+    res.status(200).json(reviews);
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ message: "Failed to fetch user reviews" });
+  }
+}
+
+
+export async function getAllReviews(req, res) {
+    if (!req.user || req.user.role !== "admin") {
+        return res.status(403).json({ message: "Unauthorized - Admin access required" });
+    }
+
+    try {
+        // Fetch all reviews sorted by date (newest first)
+        const reviews = await Review.find({})
+            .sort({ date: -1 })
+            .lean(); // Using lean() for better performance since we don't need mongoose documents
+
+        res.status(200).json({ reviews });
+    } catch (err) {
+        console.error(err);
+        res.status(500).json({ 
+            message: "Failed to fetch reviews",
+            error: err.message 
+        });
+    }
+}
 // DELETE /reviews/:reviewId (admin only)
 // DELETE /reviews/:reviewId
 
 export async function deleteReview(req, res) {
-	if (!req.user) {
-		return res.status(403).json({ message: "You must be logged in to delete a review" });
-	}
+    if (!req.user) {
+        return res.status(403).json({ message: "You must be logged in to delete a review" });
+    }
 
-	const { productId } = req.params;
-	const userEmail = req.user.email;
-	const isAdmin = req.user.role === "admin";
+    const { reviewId } = req.params;
+    const isAdmin = req.user.role === "admin";
 
-	try {
-		let deletedReview;
+    try {
+        // Only admins can delete reviews
+        if (!isAdmin) {
+            return res.status(403).json({ message: "Only admins can delete reviews" });
+        }
 
-		if (isAdmin) {
-			// Admin: delete any review for this product
-			deletedReview = await Review.findOneAndDelete({ productId });
-		} else {
-			// User: only delete their own review for this product
-			deletedReview = await Review.findOneAndDelete({ productId, userEmail });
-		}
+        // Find and delete review
+        const deletedReview = await Review.findByIdAndDelete(reviewId);
 
-		if (!deletedReview) {
-			return res.status(404).json({ message: "Review not found or not authorized to delete" });
-		}
+        if (!deletedReview) {
+            return res.status(404).json({ message: "Review not found" });
+        }
 
-		res.status(200).json({ message: "Review deleted successfully" });
-	} catch (err) {
-		console.error(err);
-		res.status(500).json({ message: "Failed to delete review" });
-	}
+        res.status(200).json({
+            message: "Review deleted successfully",
+            deletedReview
+        });
+
+    } catch (err) {
+        console.error(err);
+        res.status(500).json({
+            message: "Failed to delete review",
+            error: err.message
+        });
+    }
 }
-

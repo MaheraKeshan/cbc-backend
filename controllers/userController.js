@@ -251,6 +251,25 @@ export function getUser(req,res){
         })
     }
 }
+
+// In your userController.js
+export async function getUsers(req, res) {
+  if (!isAdmin(req, res)) {
+    return res.status(403).json({
+      message: "You must be an admin to view all users"
+    });
+  }
+
+  try {
+    const users = await User.find({}, { password: 0 }); // Exclude passwords
+    res.json(users);
+  } catch (error) {
+    res.status(500).json({
+      message: "Failed to fetch users",
+      error: error.message
+    });
+  }
+}
 export function isAdmin(req, res) {
 	
 	if(req.user == null){
@@ -264,3 +283,27 @@ export function isAdmin(req, res) {
 		}	
 
 		
+
+
+// Delete user (admin only)
+export async function deleteUser(req, res) {
+  if (!isAdmin(req, res)) {
+    return res.status(403).json({
+      message: "You are not authorized to delete users"
+    });
+  }
+
+  try {
+    const userId = req.params.id;
+    await User.findByIdAndDelete(userId);
+    res.json({
+      message: "User deleted successfully"
+    });
+  } catch (error) {
+    res.status(500).json({
+      message: "Failed to delete user"
+    });
+  }
+}
+
+// Update isAdmin function to actually return the value
